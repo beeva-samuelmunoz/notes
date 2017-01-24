@@ -1,0 +1,135 @@
+
+#
+### CUDA
+#
+
+
+uname -a
+# Linux ip-10-13-222-70 4.4.0-53-generic #74-Ubuntu SMP Fri Dec 2 15:59:10 UTC 2016 x86_64 x86_64 x86_64 GNU/Linux
+
+sudo apt-get update
+
+# Cuda requisites
+# http://developer.download.nvidia.com/compute/cuda/8.0/secure/prod/docs/sidebar/CUDA_Installation_Guide_Linux.pdf?autho=1485248648_ebe18b50e512ae313f525f43d9c4e255&file=CUDA_Installation_Guide_Linux.pdf
+
+
+# Verify VGA
+
+lspci|grep -i nvidia
+
+
+# GCC
+
+sudo apt-get install build-essential
+sudo apt-get install gcc>=5.3.1
+sudo apt-get install clang=3.8
+
+# Kernel headers
+
+sudo apt-get install linux-headers-$(uname -r)
+
+
+# CUDA
+# https://developer.nvidia.com/cuda-downloads
+
+wget http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/cuda-repo-ubuntu1604_8.0.44-1_amd64.deb
+dpkg -i cuda-repo-ubuntu1604_8.0.44-1_amd64.deb
+sudo apt-get update
+sudo apt-get install --no-install-recommends cuda
+sudo apt-get clean
+
+
+# POST INSTALLATION
+
+# Mandatory
+export PATH=/usr/local/cuda-8.0/bin${PATH:+:${PATH}}
+export LD_LIBRARY_PATH=/usr/local/cuda-8.0/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+
+# Check driver version
+cat /proc/driver/nvidia/version
+nvcc -V
+
+# Recommended test
+cuda-install-samples-8.0.sh ~
+cd ~/NVIDIA_CUDA-8.0_Samples/
+# It takes long time :(
+make
+~/NVIDIA_CUDA-8.0_Samples/bin/x86_64/linux/release/deviceQuery
+
+
+
+#
+### NEURALTALK2
+#
+
+# TORCH
+# http://torch.ch/docs/getting-started.html#installing-torch
+git clone https://github.com/torch/distro.git ~/torch --recursive
+cd ~/torch; bash install-deps
+./install.sh
+# Execute this everytime
+source ~/.bashrc
+# Packages
+luarocks install nn
+luarocks install nngraph 
+luarocks install image
+
+# CJSON
+cd
+wget https://www.kyne.com.au/~mark/software/download/lua-cjson-2.1.0.zip
+unzip lua-cjson-2.1.0.zip
+cd lua-cjson-2.1.0/
+luarocks make
+rm lua-cjson-2.1.0.zip
+
+# More packages
+luarocks install cutorch
+luarocks install cunn
+
+
+# cudnn
+# Descargar y copiar con scp
+# https://developer.nvidia.com/cuDNN
+#http://developer.download.nvidia.com/compute/machine-learning/cudnn/secure/v5.1/prod/doc/CUDNN_Library.pdf?autho=1485266583_c1a8fb114c85f04f060931492e23f251&file=CUDNN_Library.pdf
+# https://developer.nvidia.com/compute/machine-learning/cudnn/secure/v5.1/prod/8.0/cudnn-8.0-linux-x64-v5.1-tgz
+tar -xzvf cudnn-8.0-linux-x64-v5.1.tgz
+export LD_LIBRARY_PATH=~/cuda/lib64:$LD_LIBRARY_PATH
+
+# cudnn.torch
+git clone https://github.com/soumith/cudnn.torch
+cd cudnn.torch
+luarocks make cudnn-scm-1.rockspec
+
+
+#loadcaffe
+sudo apt-get install libprotobuf-dev protobuf-compiler
+luarocks install loadcaffe
+
+#torch-hdf5
+cd
+sudo apt-get install libhdf5-serial-dev hdf5-tools
+git clone https://github.com/deepmind/torch-hdf5
+cd torch-hdf5
+luarocks make hdf5-0-0.rockspec
+
+
+#h5py
+sudo apt install python-pip
+pip install h5py
+
+
+#Neuraltalk 2
+git clone https://github.com/karpathy/neuraltalk2
+
+
+
+
+
+#
+### Append these lines to .bashrc
+#
+export PATH=/usr/local/cuda-8.0/bin${PATH:+:${PATH}}
+export LD_LIBRARY_PATH=/usr/local/cuda-8.0/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+export LD_LIBRARY_PATH=~/cuda/lib64:$LD_LIBRARY_PATH
+export CUDNN_PATH=~/cuda/lib64/libcudnn.so.5
+
